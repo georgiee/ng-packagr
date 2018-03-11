@@ -24,7 +24,7 @@ export const writePackageTransform: Transform = transformFromPromise(async graph
   // 6. WRITE PACKAGE.JSON
   log.info('Writing package metadata');
   const relativeDestPath: string = path.relative(ngEntryPoint.destinationPath, ngPackage.primary.destinationPath);
-  await writePackageJson(ngEntryPoint, {
+  await writePackageJson(ngEntryPoint, ngPackage, {
     main: ensureUnixPath(path.join(relativeDestPath, 'bundles', ngEntryPoint.flatModuleFile + '.umd.js')),
     module: ensureUnixPath(path.join(relativeDestPath, 'esm5', ngEntryPoint.flatModuleFile + '.js')),
     es2015: ensureUnixPath(path.join(relativeDestPath, 'esm2015', ngEntryPoint.flatModuleFile + '.js')),
@@ -53,7 +53,11 @@ export const writePackageTransform: Transform = transformFromPromise(async graph
  * @param entryPoint An entry point of an Angular package / library
  * @param binaries Binary artefacts (bundle files) to merge into `package.json`
  */
-export async function writePackageJson(entryPoint: NgEntryPoint, binaries: { [key: string]: string }): Promise<void> {
+export async function writePackageJson(
+  entryPoint: NgEntryPoint,
+  pkg: NgPackage,
+  binaries: { [key: string]: string }
+): Promise<void> {
   log.debug('Writing package.json');
   const packageJson: any = entryPoint.packageJson;
   // set additional properties
@@ -76,19 +80,26 @@ export async function writePackageJson(entryPoint: NgEntryPoint, binaries: { [ke
     }
   }
 
-  packageJson.name = entryPoint.moduleId;
-
-  // keep the dist package.json clean
-  // this will not throw if ngPackage field does not exist
-  delete packageJson.ngPackage;
+  // Verify non-peerDependencies as they can easily lead to duplicated installs or version conflicts
+  // in the node_modules folder of an application
+  const whitelist = pkg.whitelistedNonPeerDependencies.map(value => new RegExp(value));
+  checkNonPeerDependencies(packageJson, 'dependencies', whitelist);
+  checkNonPeerDependencies(packageJson, 'devDependencies', whitelist);
 
   // removes scripts from package.json after build
   if (entryPoint.keepLifecycleScripts !== true) {
     log.info(`Removing scripts section in package.json as it's considered a potential security vulnerability.`);
     delete packageJson.scripts;
   } else {
-    log.warn(`You enabled keepLifecycleScripts explicitly. The scripts section in package.json will be published to npm.`);
+    log.warn(
+      `You enabled keepLifecycleScripts explicitly. The scripts section in package.json will be published to npm.`
+    );
   }
+
+  // keep the dist package.json clean
+  // this will not throw if ngPackage field does not exist
+  delete packageJson.ngPackage;
+  packageJson.name = entryPoint.moduleId;
 
   // `outputJson()` creates intermediate directories, if they do not exist
   // -- https://github.com/jprichardson/node-fs-extra/blob/master/docs/outputJson.md
@@ -106,4 +117,19 @@ export async function copyJavaScriptBundles(stageDir: string, destDir: string): 
 
 export async function copyTypingsAndMetadata(from: string, to: string): Promise<void> {
   await copyFiles(`${from}/**/*.{d.ts,metadata.json}`, to);
+}
+
+function checkNonPeerDependencies(packageJson: { [key: string]: any }, property: string, whitelist: RegExp[]) {
+  if (packageJson[property]) {
+    Object.keys(packageJson[property]).forEach(dep => {
+      if (whitelist.find(regex => regex.test(dep))) {
+        log.debug(`Dependency ${dep} is whitelisted in '${property}'`);
+      } else {
+        log.warn(
+          `Distributing npm packages with '${property}' is not recommended. Please consider adding ${dep} to 'peerDepenencies' or remove it from '${property}'.`
+        );
+        throw new Error(`Dependency ${dep} must be explicitly whitelisted.`);
+      }
+    });
+  }
 }
