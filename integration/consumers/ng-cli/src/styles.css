@@ -1,1 +1,8 @@
 /* You can add global styles to this file, and also import other style files */
+.magic-foo-applied {
+  outline: 1px solid red;
+}
+
+.magic-button-applied {
+  outline: 1px solid green;
+}

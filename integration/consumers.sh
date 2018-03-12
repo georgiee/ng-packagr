@@ -6,7 +6,7 @@ cd "$parent_path"
 echo "Running consumer builds in $parent_path"
 
 # Prepare samples
-array=( 'custom' 'material' 'secondary' )
+array=( 'custom' 'material' 'secondary' 'secondary-v2' )
 for sample in "${array[@]}"; do
     pushd "samples/${sample}/dist"
     yarn unlink || true
@@ -20,6 +20,7 @@ yarn install
 yarn link sample-custom
 yarn link @sample/material
 yarn link @sample/secondary
+yarn link @sample/secondary-v2
 yarn build:dev --output-path dist/dev
 yarn build:prod:jit --output-path dist/jit
 yarn build:prod:aot --output-path dist/aot

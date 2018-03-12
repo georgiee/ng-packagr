@@ -8,7 +8,7 @@ import { UiLibModule } from '@sample/material';
 
 import { AppComponent } from './app.component';
 import { CdkModule } from './cdk/cdk.module';
-import { SecondaryModule } from './secondary/secondary.module';
+import { SecondaryV2Module } from './secondary-v2/secondary-v2.module';
 
 @NgModule({
   declarations: [AppComponent],
@@ -23,7 +23,7 @@ import { SecondaryModule } from './secondary/secondary.module';
 
     // app
     CdkModule,
-    SecondaryModule
+    SecondaryV2Module
   ],
   providers: [],
   bootstrap: [AppComponent]
