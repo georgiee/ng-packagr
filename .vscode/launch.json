@@ -137,6 +137,13 @@
       "name": "Sample: typings",
       "program": "${workspaceRoot}/integration/samples.dev.js",
       "args": ["typings"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Sample: nested-src",
+      "program": "${workspaceRoot}/integration/samples.dev.js",
+      "args": ["nested-src"]
     }
   ],
   "compounds": []
