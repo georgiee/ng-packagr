@@ -144,6 +144,13 @@
       "name": "Sample: typings",
       "program": "${workspaceRoot}/integration/samples.dev.js",
       "args": ["typings"]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Sample: scss-paths",
+      "program": "${workspaceRoot}/integration/samples.dev.js",
+      "args": ["scss-paths"]
     }
   ],
   "compounds": []

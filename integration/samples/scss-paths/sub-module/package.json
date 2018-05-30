@@ -12,7 +12,7 @@
   "ngPackage": {
     "lib": {
       "entryFile": "index.ts",
-      "styleIncludePaths": ["../assets", "./assets"]
+      "styleIncludePaths": ["../assets", "./assets", "./bar"]
     }
   }
 }

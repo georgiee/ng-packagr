@@ -1,7 +1,9 @@
 @import 'theme';
 @import 'common';
+@import './local-mixins.scss';
 
 .foo {
-    background-color: $background-color-bright;
-    @include colored-border($background-color-bright, 10px);
+  background-color: $background-color-bright;
+  @include colored-border($background-color-bright, 10px);
+  @include local-test-mixin;
 }
